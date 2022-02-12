@@ -94,21 +94,27 @@ fn parse_register(text: &str) -> u16 {
 }
 
 fn parse_immed(text: &str) -> i16 {
-    let number_regex = Regex::new(r"^(?:0([xb]))?([+-]?\d+)$").unwrap();
+    let number_regex = Regex::new(r"^(?:0(?P<radix>[xb]))?(?P<sign>[+-])?(?P<number>\d+)$").unwrap();
     let m = Regex::captures(&number_regex, text).expect("Not a number");
-    let num = m.get(2).expect("Not a number").as_str();
-    match m.get(1) {
-        Some(radix) => {
-            let radix: u32 = match radix.as_str() {
+    let num = m.name("number").expect("Not a number").as_str();
+    let radix: u32 = match m.name("radix") {
+        Some(radix) => 
+            match radix.as_str() {
                 "x" => 16,
                 "b" => 2,
                 _ => unreachable!("Oh no, that's not possible!")
-            };
-            i16::from_str_radix(&num, radix).expect("Number can't fit into 16 bits!")
-        },
-        None => {
-            num.parse::<i16>().expect("Number can't fit into 16 bits!")
-        }
+            },
+        None => 10
+    };
+    let num = u16::from_str_radix(&num, radix).expect("Number can't fit into 16 bits!") as i16;
+    match m.name("sign") {
+        Some(sign) => 
+            match sign.as_str() {
+                "+" => num,
+                "-" => num * -1,
+                _ => unreachable!("Oh no, that's not possible!")
+            },
+        None => num
     }
 }
 
