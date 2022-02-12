@@ -206,6 +206,13 @@ fn main() {
                         _ => unreachable!("This shouldn't happen!")
                     }
                 }
+
+                // Special case for JSR, RTS, PUSH, POP
+                // Stack pointer is r7 and should be in Sreg
+                if [59, 60, 68, 69].contains(&opcode) {
+                    instr |= 7 << 3;
+                }
+
                 print!("{:#06x}: ", address);
                 print!("{instr:#06x} {instr:#018b}");
                 println!("   {line}");
