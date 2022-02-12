@@ -93,8 +93,8 @@ fn parse_register(text: &str) -> u16 {
     m[1].parse::<u16>().unwrap()
 }
 
-fn parse_immed(text: &str) -> u16 {
-    let number_regex = Regex::new(r"^(?:0([x,b]))?(\d+)$").unwrap();
+fn parse_immed(text: &str) -> i16 {
+    let number_regex = Regex::new(r"^(?:0([xb]))?([+-]?\d+)$").unwrap();
     let m = Regex::captures(&number_regex, text).expect("Not a number");
     let num = m.get(2).expect("Not a number").as_str();
     match m.get(1) {
@@ -104,16 +104,16 @@ fn parse_immed(text: &str) -> u16 {
                 "b" => 2,
                 _ => unreachable!("Oh no, that's not possible!")
             };
-            u16::from_str_radix(&num, radix).expect("Number can't fit into 16 bits!")
+            i16::from_str_radix(&num, radix).expect("Number can't fit into 16 bits!")
         },
         None => {
-            num.parse::<u16>().expect("Number can't fit into 16 bits!")
+            num.parse::<i16>().expect("Number can't fit into 16 bits!")
         }
     }
 }
 
 fn main() {
-    let re = Regex::new(r"^(?:(?P<oznaka>\w+):)?\s*(?P<ukaz>[a-zA-Z]+)\s+(\w+)?(?:\s*,\s*(\w+))?(?:\s*,\s*(\w+))?(?:\s*,\s*(\w+))?\s*#*.*$").unwrap();
+    let re = Regex::new(r"^(?:(?P<oznaka>\w+):)?\s*(?P<ukaz>[a-zA-Z]+)(?:\s+([+-]?\w+))?(?:\s*,\s*([+-]?\w+))?(?:\s*,\s*([+-]?\w+))?(?:\s*,\s*([+-]?\w+))?\s*#*.*$").unwrap();
     let args: Vec<String> = env::args().collect();
     if args.len() < 2 {
         println!("Pot do datoteke ni podana!");
@@ -153,7 +153,7 @@ fn main() {
         for cap in re.captures_iter(line) {
             if let Some(ukaz) = cap.name("ukaz") {
                 let mut instr: u16 = 0;
-                let mut immed: Option<u16> = None;
+                let mut immed: Option<i16> = None;
                 let ukaz = ukaz.as_str().to_lowercase();
                 let (opcode, format) = HASHMAP.get(&ukaz.as_ref()).expect(format!("Unknown instruction: {ukaz}").as_str());
                 let opcode = opcode.clone();
@@ -191,16 +191,16 @@ fn main() {
                         },
                         'i' => {
                             if let Some(addr) = labels.get(arg) {
-                                immed = Some(addr.clone());
+                                immed = Some(addr.clone() as i16);
                             } else {
                                 immed = Some(parse_immed(&arg));
                             }
                         },
                         'I' => {
                             if let Some(addr) = labels.get(arg) {
-                                immed = Some(addr.clone());
+                                immed = Some(addr.clone() as i16 - address as i16 - 1);
                             } else  {
-                                immed = Some(parse_immed(&arg));
+                                immed = Some(parse_immed(&arg) - address as i16 - 1);
                             }
                         },
                         _ => unreachable!("This shouldn't happen!")
