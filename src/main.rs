@@ -1,8 +1,11 @@
 use std::env;
 use std::fs;
+use std::io::Write;
 use std::process;
 use regex::Regex;
 use std::collections::HashMap;
+use std::fs::File;
+use std::path::Path;
 
 #[macro_use]
 extern crate lazy_static;
@@ -131,7 +134,7 @@ fn main() {
 
     let mut address: u16 = 0;
     let mut labels = HashMap::<String, u16>::new();
-    let mut instr = Vec::<u16>::new();
+    let mut instructions = Vec::<u16>::new();
 
     for line in contents.lines() {
         
@@ -219,18 +222,29 @@ fn main() {
                     instr |= 7 << 3;
                 }
 
-                print!("{:#06x}: ", address);
-                print!("{instr:#06x} {instr:#018b}");
+                print!("{:04x}: ", address);
+                print!("{instr:04x} {instr:016b}");
                 println!("   {line}");
+                instructions.push(instr);
                 address += 1;
 
                 if let Some(immed) = immed {
-                    print!("{:#06x}: ", address);
-                    println!("{immed:#06x} {immed:#018b}");
+                    print!("{:04x}: ", address);
+                    println!("{immed:04x} {immed:016b}");
+                    instructions.push(immed as u16);
                     address += 1;
                 }
             }
         }
         
     }
+
+    // Save to RAM file
+    let path = Path::new(file_path).with_extension("ram");
+    let mut file = File::create(path).expect("No permission to create file!");
+    file.write_all(b"v2.0 raw\n").unwrap();
+    for instr in instructions {
+        file.write_all(format!("{:x}\n", instr).as_bytes()).unwrap();
+    }
+    file.flush().expect("Something wrong happened writing to the file");
 }
