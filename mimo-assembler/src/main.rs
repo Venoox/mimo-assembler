@@ -125,7 +125,7 @@ fn main() {
     let re = Regex::new(r"^(?:(?P<oznaka>\w+):)?\s*(?P<ukaz>[a-zA-Z]+)(?:\s+([+-]?\w+))?(?:\s*,\s*([+-]?\w+))?(?:\s*,\s*([+-]?\w+))?(?:\s*,\s*([+-]?\w+))?\s*#*.*$").unwrap();
     let args: Vec<String> = env::args().collect();
     if args.len() < 2 {
-        println!("Pot do datoteke ni podana!");
+        println!("File path not specified!");
         process::exit(1);
     }
     let file_path = &args[1];

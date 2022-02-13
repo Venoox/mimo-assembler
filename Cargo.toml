@@ -1,10 +1,5 @@
-[package]
-name = "mimo-assembler"
-version = "0.0.1"
-edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
-regex = "1"
-lazy_static = "1.4.0"
+[workspace]
+members = [
+    "mimo-assembler",
+    "mimo-microassembler",
+]
