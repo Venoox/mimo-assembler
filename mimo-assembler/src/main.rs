@@ -140,7 +140,11 @@ fn main() {
         
         for cap in re.captures_iter(line) {
             if let Some(oznaka) = cap.name("oznaka") {
-                labels.insert(String::from(oznaka.as_str()), address);
+                let oznaka = String::from(oznaka.as_str());
+                if labels.contains_key(&oznaka) {
+                    panic!("Label {oznaka} is already defined!");
+                }
+                labels.insert(oznaka, address);
             }
             if let Some(ukaz) = cap.name("ukaz") {
                 let ukaz = ukaz.as_str().to_lowercase();
